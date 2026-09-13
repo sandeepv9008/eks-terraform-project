@@ -1,0 +1,32 @@
+name: Backend CI
+
+"on":
+  push:
+    branches:
+      - main
+  
+  jobs:
+    build and test:
+      runs-on: ubuntu-latest
+      steps:
+        - uses: actions/checkout@v4
+        - name: Checkout code
+
+        - name: Set up Python
+          uses: actions/setup-python@v5
+          with:
+            python-version: 3.12
+
+        - name: Install dependencies
+          working-directory: application/backend
+          run: |
+            pip install -r requirements.txt
+          
+        - name: Build Docker image
+          working-directory: application/backend
+          run: |
+            docker build --platform linux/amd64 -t eks-demo-backend:test .
+
+        - name: verify Docker image
+          run: |
+            docker images eks-demo-backend:test
