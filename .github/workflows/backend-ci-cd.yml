@@ -1,9 +1,18 @@
+```yaml
 name: Backend CI
 
 on:
   push:
     branches:
       - main
+
+permissions:
+  contents: read
+  id-token: write
+
+env:
+  AWS_REGION: ap-south-1
+  ECR_REPOSITORY: eks-demo-backend
 
 jobs:
   build-and-test:
@@ -22,12 +31,45 @@ jobs:
         working-directory: application/backend
         run: |
           pip install -r requirements.txt
+      
+      - name: Configure AWS credentials 
+        uses: aws-actions/configure-aws-credentials@v5
+        with:
+          role-to-assume: arn:aws:iam::370613533967:role/github-actions-eks-learning
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Login Amazon ECR
+        id: ecr-login
+        uses: aws-actions/amazon-ecr-login@v2
 
       - name: Build Docker image
         working-directory: application/backend
         run: |
-          docker build --platform linux/amd64 -t eks-demo-backend:test .
+          docker build --platform linux/amd64 \
+            -t ${{ steps.ecr-login.outputs.registry }}/${{ env.ECR_REPOSITORY }}:${{ github.sha }} .
 
       - name: Verify Docker image
         run: |
-          docker images eks-demo-backend:test
+          docker images ${{ steps.ecr-login.outputs.registry }}/${{ env.ECR_REPOSITORY }}:${{ github.sha }}
+
+      - name: Push Docker image to Amazon ECR
+        run: |
+          docker push ${{ steps.ecr-login.outputs.registry }}/${{ env.ECR_REPOSITORY }}:${{ github.sha }}
+
+      - name: Update kubeconfig
+        run: |
+          aws eks update-kubeconfig \
+            --region $AWS_REGION \
+            --name eks-learning-cluster
+
+      - name: Verify EKS access
+        run: |
+          kubectl get nodes
+
+      - name: Deploy with Helm
+        run: |
+          helm upgrade --install backend ./helm/backend \
+            --namespace ecommerce \
+            --set-string image.tag=${{ github.sha }} \
+            --wait \
+            --timeout 5m
