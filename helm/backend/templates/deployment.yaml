@@ -4,19 +4,24 @@ kind: Deployment
 metadata:
   name: {{ .Values.name.deployment }}
   labels:
-    app: backend
+    {{- include "backend.labels" . | nindent 4 }}
 
 spec:
   replicas: {{ .Values.replicaCount }}
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
 
   selector:
     matchLabels:
-      app: backend
+      {{- include "backend.selectorLabels" . | nindent 6 }}
 
   template:
     metadata:
       labels:
-        app: backend
+        {{- include "backend.selectorLabels" . | nindent 8 }}
 
     spec:
       containers:
@@ -25,6 +30,10 @@ spec:
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
 
           imagePullPolicy: {{ .Values.image.pullPolicy }}
+
+          env:
+            - name: APP_VERSION
+              value: "2.0"
 
           ports:
             - name: http
@@ -36,3 +45,6 @@ spec:
 
           readinessProbe:
             {{- toYaml .Values.readinessProbe | nindent 12 }}
+
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
