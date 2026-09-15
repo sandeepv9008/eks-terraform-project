@@ -30,10 +30,13 @@ spec:
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
 
           imagePullPolicy: {{ .Values.image.pullPolicy }}
+          
+          envFrom:
+            - configMapRef:
+                name: {{ .Values.name.deployment }}-configmap
 
-          env:
-            - name: APP_VERSION
-              value: "2.0"
+            - secretRef:
+                name: {{ .Values.name.deployment }}-secret
 
           ports:
             - name: http
