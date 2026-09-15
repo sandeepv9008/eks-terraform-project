@@ -4,13 +4,13 @@ kind: Service
 metadata:
   name: {{ .Values.name.service }}
   labels:
-    app: backend
+    {{- include "backend.labels" . | nindent 4 }}
 
 spec:
   type: {{ .Values.service.type }}
 
   selector:
-    app: backend
+    {{- include "backend.selectorLabels" . | nindent 4 }}
 
   ports:
     - port: {{ .Values.service.port }}
