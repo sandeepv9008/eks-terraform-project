@@ -27,5 +27,13 @@ def products():
         ]
     })
 
+@app.route("/api/cpu-test")
+def cpu_test():
+    total = 0
+    for i in range(20_000_000):
+        total += i * i
+
+    return {"status": "done", "result": total}
+
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=6010)
