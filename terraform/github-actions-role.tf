@@ -10,9 +10,14 @@ data "aws_iam_policy_document" "github_actions_assume_role_policy" {
     actions = ["sts:AssumeRoleWithWebIdentity"]
 
     condition {
+      test     = "StringEquals"
+      variable = "token.actions.githubusercontent.com:aud"
+      values   = ["sts.amazonaws.com"]
+    }
+    condition {
       test     = "StringLike"
       variable = "token.actions.githubusercontent.com:sub"
-      values   = ["repo:sandeepv9008/eks-terraform-project:ref:refs/heads/main"]
+      values   = ["repo:sandeepv9008@279628649/eks-terraform-project@1368139552:ref:refs/heads/main"]
     }
   }
 
