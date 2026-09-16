@@ -69,6 +69,14 @@ jobs:
         run: |
           helm upgrade --install backend ./helm/backend \
             --namespace ecommerce \
+            --create-namespace \
             --set-string image.tag=${{ github.sha }} \
             --wait \
             --timeout 5m
+
+      - name: Verify Deployment
+        run: |
+          kubectl rollout status deployment/backend-deployment -n ecommerce --timeout=5m
+          kubectl get pods -n ecommerce
+          kubectl get svc -n ecommerce
+          kubectl get ingress -n ecommerce
