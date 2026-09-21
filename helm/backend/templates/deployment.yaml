@@ -36,7 +36,7 @@ spec:
                 name: {{ .Values.name.deployment }}-configmap
 
             - secretRef:
-                name: {{ .Values.name.deployment }}-secret
+                name: backend-secret
 
           ports:
             - name: http
