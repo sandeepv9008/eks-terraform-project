@@ -117,3 +117,21 @@ resources:
   limits:
     memory: "512Mi"
     cpu: "500m"
+
+namespace: ecommerce
+
+aws:
+  region: ap-south-1
+
+secretStore:
+  name: backend-secretstore
+
+secrets:
+    db:
+      name: backend-db-external-secret
+      awsSecretName: eks/backend/db
+      kubernetesSecretName: backend-db-secret
+    api:
+      name: backend-api-external-secret
+      awsSecretName: eks/backend/api
+      kubernetesSecretName: backend-api-secret
