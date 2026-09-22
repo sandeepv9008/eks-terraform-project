@@ -9,7 +9,6 @@ permissions:
 
 env:
   AWS_REGION: ap-south-1
-  AWS_ACCOUNT_ID: ${{ vars.AWS_ACCOUNT_ID }} 
   AWS_ROLE_ARN: ${{ vars.AWS_ROLE_ARN }}
   ECR_REPOSITORY: eks-demo-backend
   EKS_CLUSTER_NAME: eks-learning-cluster
@@ -37,7 +36,7 @@ jobs:
       - name: Configure AWS credentials 
         uses: aws-actions/configure-aws-credentials@v5
         with:
-          role-to-assume: arn:aws:iam::370613533967:role/github-actions-role
+          role-to-assume: ${{ env.AWS_ROLE_ARN }}
           aws-region: ${{ env.AWS_REGION }}
 
       - name: Login Amazon ECR
@@ -73,7 +72,7 @@ jobs:
       - name: Configure AWS credentials 
         uses: aws-actions/configure-aws-credentials@v5 
         with: 
-          role-to-assume: arn:aws:iam::370613533967:role/github-actions-role 
+          role-to-assume: ${{ env.AWS_ROLE_ARN }}
           aws-region: ${{ env.AWS_REGION }} 
       
       - name: Setup kubectl 
@@ -94,12 +93,20 @@ jobs:
         run: |
           kubectl get nodes
 
+      - name: Get AWS account ID
+        run: |
+          AWS_ACCOUNT_ID=$(aws sts get-caller-identity \
+            --query Account \
+            --output text)
+
+          echo "AWS_ACCOUNT_ID=$AWS_ACCOUNT_ID" >> "$GITHUB_ENV"
+
       - name: Deploy with Helm
         run: |
           helm upgrade --install backend ./helm/backend \
             --namespace $NAMESPACE \
             --create-namespace \
-            --set-string image.repository=${{ env.AWS_ACCOUNT_ID }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com/${{ env.ECR_REPOSITORY }} \
+            --set-string image.repository=${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_REPOSITORY} \
             --set-string image.tag=${{ github.sha }} \
             --wait \
             --timeout 5m
