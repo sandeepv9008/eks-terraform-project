@@ -54,51 +54,51 @@ jobs:
           helm repo add eks https://aws.github.io/eks-charts 
           helm repo update
 
-      - name: Install External secret Operator
+      - name: Install External Secrets Operator
         run: |
-          helm upgrade --install external-secrets external-secrets/external-secrets \
-            --namespace external-secrets \
-            --create-namespace \
-            --set serviceAccount.create=true \
-            --set serviceAccount.name=external-secrets \ 
-            --set serviceAccount.annotations."eks\.amazonaws\.com/role-arn"=arn:aws:iam::370613533967:role/external-secrets-role
+            helm upgrade --install external-secrets external-secrets/external-secrets \
+              --namespace external-secrets \
+              --create-namespace \
+              --set serviceAccount.create=true \
+              --set serviceAccount.name=external-secrets \
+              --set-string 'serviceAccount.annotations.eks\.amazonaws\.com/role-arn=arn:aws:iam::370613533967:role/external-secrets-role'
 
       - name: Verify External Secret Operator
         run: |
           kubectl get pods \
             -n external-secrets
 
-          kubectl get serviceaccount \ 
-            external-secrets \ 
-            -n external-secrets \ 
+          kubectl get serviceaccount \
+            external-secrets \
+            -n external-secrets \
             -o yaml
 
       - name: Install AWS LoadBalancer Controller
         run: |
-          VPC_ID=$(aws eks describe-cluster \ 
-          --name "$EKS_CLUSTER_NAME" \ 
-          --region "$AWS_REGION" \ 
-          --query 'cluster.resourcesVpcConfig.vpcId' \ 
+          VPC_ID=$(aws eks describe-cluster \
+          --name "$EKS_CLUSTER_NAME" \
+          --region "$AWS_REGION" \
+          --query 'cluster.resourcesVpcConfig.vpcId' \
           --output text)
 
-          helm upgrade --install aws-load-balancer-controller eks/aws-load-balancer-controller \ 
-            --namespace kube-system \ 
-            --set clusterName="$EKS_CLUSTER_NAME" \ 
-            --set region="$AWS_REGION" \ 
-            --set vpcId="$VPC_ID" \ 
-            --set serviceAccount.create=true \ 
-            --set serviceAccount.name=aws-load-balancer-controller \ 
+          helm upgrade --install aws-load-balancer-controller eks/aws-load-balancer-controller \
+            --namespace kube-system \
+            --set clusterName="$EKS_CLUSTER_NAME" \
+            --set region="$AWS_REGION" \
+            --set vpcId="$VPC_ID" \
+            --set serviceAccount.create=true \
+            --set serviceAccount.name=aws-load-balancer-controller \
             --set serviceAccount.annotations."eks\.amazonaws\.com/role-arn"=arn:aws:iam::370613533967:role/AmazonEKSLoadBalancerControllerRole
 
       - name: Verify AWS Load Balancer Controller 
         run: | 
-            kubectl get pods \ 
-              -n kube-system \ 
+            kubectl get pods \
+              -n kube-system \
               -l app.kubernetes.io/name=aws-load-balancer-controller 
             
-            kubectl get serviceaccount \ 
-              aws-load-balancer-controller \ 
-              -n kube-system \ 
+            kubectl get serviceaccount \
+              aws-load-balancer-controller \
+              -n kube-system \
              -o yaml 
       
       - name: Verify platform 
