@@ -279,5 +279,9 @@ resource "aws_eks_access_policy_association" "github_actions_access_policy" {
   access_scope {
     type = "cluster"
   }
+
+  depends_on = [
+    aws_eks_access_entry.github_actions_access
+  ]
 }
 
