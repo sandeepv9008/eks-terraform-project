@@ -12,14 +12,14 @@ terraform {
     }
 
     helm = {
-      source = "hashicorp/helm"
+      source  = "hashicorp/helm"
       version = "~> 3.0"
     }
   }
 
   backend "s3" {
     bucket = "eks-learning-terraform-state-370613533967"
-    key = "terraform.tfstate"
+    key    = "terraform.tfstate"
     region = "ap-south-1"
   }
 }
