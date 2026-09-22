@@ -10,11 +10,11 @@ resource "aws_iam_policy" "external_secrets" {
         Action = [
           "secretsmanager:GetSecretValue",
         ]
-        Resource = ["arn:aws:secretsmanager:ap-south-1:370613533967:secret:eks/backend/db-*", "arn:aws:secretsmanager:ap-south-1:370613533967:secret:eks/backend/api-*"]
+        Resource = [aws_secretsmanager_secret.backend_db.arn, aws_secretsmanager_secret.backend_api.arn
+        ]
       }
     ]
   })
-
 }
 
 data "aws_iam_policy_document" "external_secrets_assume_role" {
@@ -24,7 +24,7 @@ data "aws_iam_policy_document" "external_secrets_assume_role" {
     principals {
       type = "Federated"
       identifiers = [
-        "arn:aws:iam::370613533967:oidc-provider/oidc.eks.ap-south-1.amazonaws.com/id/DCA588B5FC3370DE27BF8C276AE8F980"
+        "aws_iam_openid_connect_provider.eks_oidc.arn"
       ]
     }
 
@@ -32,13 +32,13 @@ data "aws_iam_policy_document" "external_secrets_assume_role" {
 
     condition {
       test     = "StringEquals"
-      variable = "oidc.eks.ap-south-1.amazonaws.com/id/DCA588B5FC3370DE27BF8C276AE8F980:sub"
+      variable = "${replace(aws_eks_cluster.eks_cluster.identity[0].oidc[0].issuer, "https://", "")}:sub"
       values   = ["system:serviceaccount:external-secrets:external-secrets"]
     }
 
     condition {
       test     = "StringEquals"
-      variable = "oidc.eks.ap-south-1.amazonaws.com/id/DCA588B5FC3370DE27BF8C276AE8F980:aud"
+      variable = "${replace(aws_eks_cluster.eks_cluster.identity[0].oidc[0].issuer, "https://", "")}:aud"
       values   = ["sts.amazonaws.com"]
     }
   }

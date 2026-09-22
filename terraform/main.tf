@@ -10,6 +10,17 @@ terraform {
       source  = "hashicorp/kubernetes"
       version = "~> 3.0"
     }
+
+    helm = {
+      source = "hashicorp/helm"
+      version = "~> 3.0"
+    }
+  }
+
+  backend "s3" {
+    bucket = "eks-learning-terraform-state-370613533967"
+    key = "terraform.tfstate"
+    region = "ap-south-1"
   }
 }
 
@@ -243,21 +254,25 @@ data "aws_eks_cluster_auth" "eks_cluster" {
   name = aws_eks_cluster.eks_cluster.name
 }
 
-provider "kubernetes" {
+/* provider "kubernetes" {
   host                   = data.aws_eks_cluster.eks_cluster.endpoint
   cluster_ca_certificate = base64decode(data.aws_eks_cluster.eks_cluster.certificate_authority[0].data)
   token                  = data.aws_eks_cluster_auth.eks_cluster.token
+} */
+
+data "aws_iam_role" "github_actions_role" {
+  name = "github-actions-role"
 }
 
 resource "aws_eks_access_entry" "github_actions_access" {
   cluster_name  = aws_eks_cluster.eks_cluster.name
-  principal_arn = aws_iam_role.github_actions_role.arn
+  principal_arn = data.aws_iam_role.github_actions_role.arn
   type          = "STANDARD"
 }
 
 resource "aws_eks_access_policy_association" "github_actions_access_policy" {
   cluster_name  = aws_eks_cluster.eks_cluster.name
-  principal_arn = aws_iam_role.github_actions_role.arn
+  principal_arn = data.aws_iam_role.github_actions_role.arn
 
   policy_arn = "arn:aws:eks::aws:cluster-access-policy/AmazonEKSClusterAdminPolicy"
 

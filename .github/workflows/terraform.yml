@@ -1,0 +1,55 @@
+name: Terraform Infrastructure
+
+on:
+  push:
+   branches:
+     - main
+   paths:
+     - "terraform/**"
+     - ".github/workflows/terraform/yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write
+
+env:
+  AWS_REGION: ap-south-1
+  TF_WORKINGD_DIR: terraform
+
+jobs:
+  terraform: 
+    name: Terraform plan and apply
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: terraform
+
+    steps:
+      - name: checkout code
+        uses: actions/checkout@4
+
+      - name: configure aws credentials
+        uses: aws-actions/configure-aws-credentials@v5
+        with:
+          role-to-assume: arn:aws:iam::370613533967:role/github-actions-role
+          aws-region: ${{env.AWS_REGION}}
+      
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+
+      - name: Terraform Init
+        uses: terraform init -reconfigure
+
+      - name: erraform Format Check
+        run: terraform fmt -check
+
+      - name: Terraform Validate
+        run: terraform validate
+
+      - name: Terraform Plan
+        run: terraform plan -out=tfplan
+
+      - name: Terraform Apply
+        run: terraform apply -auto-approve tfplan

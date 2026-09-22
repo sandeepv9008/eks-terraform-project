@@ -17,7 +17,7 @@ data "aws_iam_policy_document" "github_actions_assume_role_policy" {
     condition {
       test     = "StringLike"
       variable = "token.actions.githubusercontent.com:sub"
-      values   = ["repo:sandeepv9008@279628649/eks-terraform-project@1368139552:ref:refs/heads/main"]
+      values   = ["repo:sandeepv9008/eks-terraform-project:ref:refs/heads/main"]
     }
   }
 
@@ -34,10 +34,10 @@ resource "aws_iam_role" "github_actions_role" {
 
 resource "aws_iam_role_policy_attachment" "github_actions_ecr" {
   role       = aws_iam_role.github_actions_role.name
-  policy_arn = "arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryPowerUser"
+  policy_arn = "arn:aws:iam::aws:policy/AdministratorAccess"
 }
 
-resource "aws_iam_role_policy" "github_actions_eks_describe" {
+/* resource "aws_iam_role_policy" "github_actions_eks_describe" {
   name = "github-actions-eks-describe"
   role = aws_iam_role.github_actions_role.id
 
@@ -56,4 +56,4 @@ resource "aws_iam_role_policy" "github_actions_eks_describe" {
       }
     ]
   })
-}
+} */
