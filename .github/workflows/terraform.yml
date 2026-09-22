@@ -6,7 +6,7 @@ on:
      - main
    paths:
      - "terraform/**"
-     - ".github/workflows/terraform/yml"
+     - ".github/workflows/terraform.yml"
   workflow_dispatch:
 
 permissions:
@@ -28,7 +28,7 @@ jobs:
 
     steps:
       - name: checkout code
-        uses: actions/checkout@4
+        uses: actions/checkout@v4
 
       - name: configure aws credentials
         uses: aws-actions/configure-aws-credentials@v5
@@ -40,7 +40,7 @@ jobs:
         uses: hashicorp/setup-terraform@v3
 
       - name: Terraform Init
-        uses: terraform init -reconfigure
+        run: terraform init -reconfigure
 
       - name: erraform Format Check
         run: terraform fmt -check
