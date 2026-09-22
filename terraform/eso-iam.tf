@@ -10,7 +10,7 @@ resource "aws_iam_policy" "external_secrets" {
         Action = [
           "secretsmanager:GetSecretValue",
         ]
-        Resource = ["arn:aws:secretsmanager:ap-south-1:370613533967:secret:eks/backend/db-*","arn:aws:secretsmanager:ap-south-1:370613533967:secret:eks/backend/api-*"]
+        Resource = ["arn:aws:secretsmanager:ap-south-1:370613533967:secret:eks/backend/db-*", "arn:aws:secretsmanager:ap-south-1:370613533967:secret:eks/backend/api-*"]
       }
     ]
   })
