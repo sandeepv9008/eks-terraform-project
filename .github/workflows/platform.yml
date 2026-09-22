@@ -110,8 +110,8 @@ jobs:
             kubectl get pods -n external-secrets 
 
             echo "=== AWS Load Balancer Controller ===" 
-            kubectl get pods \ 
-            -n kube-system \ 
+            kubectl get pods \
+            -n kube-system \
             -l app.kubernetes.io/name=aws-load-balancer-controller 
 
             echo "=== Application Namespace ===" 
