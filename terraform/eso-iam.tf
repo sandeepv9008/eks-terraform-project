@@ -24,7 +24,7 @@ data "aws_iam_policy_document" "external_secrets_assume_role" {
     principals {
       type = "Federated"
       identifiers = [
-        "aws_iam_openid_connect_provider.eks_oidc.arn"
+        aws_iam_openid_connect_provider.eks_oidc.arn
       ]
     }
 
