@@ -35,5 +35,13 @@ def cpu_test():
 
     return {"status": "done", "result": total}
 
+@app.route("/api/config-check")
+def config_check():
+    return jsonify({
+        "db_username_loaded": bool(os.getenv("DB_USERNAME")),
+        "db_password_loaded": bool(os.getenv("DB_PASSWORD")),
+        "api_key_loaded": bool(os.getenv("API_KEY"))
+    })
+
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=6010)

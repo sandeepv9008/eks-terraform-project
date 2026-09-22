@@ -1,4 +1,4 @@
-name: Backend CI
+name: Backend CI / CD
 
 on:
   workflow_dispatch:
@@ -9,10 +9,15 @@ permissions:
 
 env:
   AWS_REGION: ap-south-1
+  AWS_ACCOUNT_ID: ${{ vars.AWS_ACCOUNT_ID }} 
+  AWS_ROLE_ARN: ${{ vars.AWS_ROLE_ARN }}
   ECR_REPOSITORY: eks-demo-backend
+  EKS_CLUSTER_NAME: eks-learning-cluster
+  NAMESPACE: ecommerce
 
 jobs:
-  build-and-test:
+  # ============================================================ # CI - Build and Push Docker Image # ============================================================
+  build-and-push:
     runs-on: ubuntu-latest
 
     steps:
@@ -53,11 +58,37 @@ jobs:
         run: |
           docker push ${{ steps.ecr-login.outputs.registry }}/${{ env.ECR_REPOSITORY }}:${{ github.sha }}
 
+# ============================================================ # CD - Deploy to EKS # ============================================================
+
+  deploy:
+    name: CD - Deploy to EKS 
+    runs-on: ubuntu-latest
+
+    needs: build-and-push
+    
+    steps:
+      - name: Checkout code 
+        uses: actions/checkout@v4 
+      
+      - name: Configure AWS credentials 
+        uses: aws-actions/configure-aws-credentials@v5 
+        with: 
+          role-to-assume: arn:aws:iam::370613533967:role/github-actions-role 
+          aws-region: ${{ env.AWS_REGION }} 
+      
+      - name: Setup kubectl 
+        uses: azure/setup-kubectl@v4 
+        with: 
+          version: latest 
+
+      - name: Setup Helm 
+        uses: azure/setup-helm@v4
+
       - name: Update kubeconfig
         run: |
           aws eks update-kubeconfig \
             --region $AWS_REGION \
-            --name eks-learning-cluster
+            --name $EKS_CLUSTER_NAME
 
       - name: Verify EKS access
         run: |
@@ -66,15 +97,28 @@ jobs:
       - name: Deploy with Helm
         run: |
           helm upgrade --install backend ./helm/backend \
-            --namespace ecommerce \
+            --namespace $NAMESPACE \
             --create-namespace \
+            --set-string image.repository=${{ env.AWS_ACCOUNT_ID }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com/${{ env.ECR_REPOSITORY }} \
             --set-string image.tag=${{ github.sha }} \
             --wait \
             --timeout 5m
 
       - name: Verify Deployment
         run: |
-          kubectl rollout status deployment/backend-deployment -n ecommerce --timeout=5m
-          kubectl get pods -n ecommerce
-          kubectl get svc -n ecommerce
-          kubectl get ingress -n ecommerce
+          kubectl rollout status deployment/backend-deployment -n $NAMESPACE --timeout=5m
+
+          echo "=== Pods ==="
+          kubectl get pods -n $NAMESPACE
+
+          echo "=== Services ==="
+          kubectl get svc -n $NAMESPACE
+
+          echo "=== Ingress ==="
+          kubectl get ingress -n $NAMESPACE
+
+          echo "=== ExternalSecrets ===" 
+          kubectl get externalsecret -n "$NAMESPACE" 
+          
+          echo "=== Kubernetes Secrets ===" 
+          kubectl get secrets -n "$NAMESPACE"
