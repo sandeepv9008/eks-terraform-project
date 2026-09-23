@@ -18,6 +18,7 @@ env:
   TF_WORKING_DIR: terraform
   HELM_CHART_DIR: helm/backend
   BACKEND_DIR: application/backend
+  ECR_REGISTRY: ${{ vars.ECR_REGISTRY }}
 
   ESO_ROLE_ARN: ${{ vars.ESO_ROLE_ARN }}
   ALB_ROLE_ARN: ${{ vars.ALB_ROLE_ARN }}
