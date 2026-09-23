@@ -163,7 +163,7 @@ jobs:
 
       - name: Update Kubeconfig
         run: |
-          aws eks update-kubecofig \
+          aws eks update-kubeconfig \
             --region "$AWS_REGION" \
             --name "$EKS_CLUSTER_NAME"
 
@@ -191,7 +191,7 @@ jobs:
             --create-namespace \
             --set serviceAccount.create=true \
             --set serviceAccount.name=external-secrets \
-            --set-string 'serviceAccount.annotations.eks\.amazonaws\.com/role-arn=$ESO_ROLE_ARN'
+            --set-string "serviceAccount.annotations.eks\.amazonaws\.com/role-arn=$ESO_ROLE_ARN"
 
       - name: Verify External Secrets Operator
         run: |
@@ -222,7 +222,7 @@ jobs:
             --set vpcId="$VPC_ID" \
             --set serviceAccount.create=true \
             --set serviceAccount.name=aws-load-balancer-controller \
-            --set-string 'serviceAccount.annotations.eks\.amazonaws\.com/role-arn=$ALB_ROLE_ARN'
+            --set-string "serviceAccount.annotations.eks\.amazonaws\.com/role-arn=$ALB_ROLE_ARN"
 
       - name: Verify AWS Load Balancer Controller
         run: |
