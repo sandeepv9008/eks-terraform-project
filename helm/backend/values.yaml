@@ -135,3 +135,9 @@ secrets:
       name: backend-api-external-secret
       awsSecretName: eks/backend/api
       kubernetesSecretName: backend-api-secret
+
+serviceMonitor:
+  enabled: true
+  path: /metrics
+  interval: 15s
+  port: http
