@@ -1,7 +1,15 @@
-FROM python:3.9-slim
+FROM python:3.13-slim-bookworm AS builder
 WORKDIR /app
 COPY  requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install --no-cache-dir --prefix=/install -r requirements.txt
+
+FROM python:3.13-slim-bookworm
+WORKDIR /app
+COPY --from=builder /install /usr/local
+# pip is only required during image build, not application runtime
+RUN rm -rf \
+    /usr/local/lib/python3.13/site-packages/pip \
+    /usr/local/lib/python3.13/site-packages/pip-*.dist-info
 COPY app.py .
 EXPOSE 6010
 ENV API_VERSION=1.0
